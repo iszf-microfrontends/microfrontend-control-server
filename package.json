@@ -1,0 +1,28 @@
+{
+  "name": "microfrontend-control-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:iszf-microfrontends/microfrontend-control-server.git",
+  "author": "Sviatoslav <sviatoslavnazin@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon ./src/index.ts",
+    "build": "ts-node esbuild.config.ts",
+    "format": "prettier src --write"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.9.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.3.2",
+    "esbuild": "^0.18.10",
+    "nodemon": "^2.0.22",
+    "prettier": "^2.8.8",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.5"
+  }
+}
