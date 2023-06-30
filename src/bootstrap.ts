@@ -12,6 +12,11 @@ enum ErrorType {
   SERVER_ERROR = 'server_error',
 }
 
+enum ErrorStatus {
+  BAD_REQUEST = 400,
+  SERVER_ERROR = 500,
+}
+
 type MicrofrontendDto = {
   name: string;
   url: string;
@@ -41,7 +46,7 @@ microfrontendsRouter.post('/start', validateRequest(MicrofrontendDtoSchema), (re
   const data = req.body as MicrofrontendDto;
   const existingMicrofrontend = startedMicrofrontends.find((mf) => mf.url === data.url);
   if (existingMicrofrontend) {
-    throw { status: 400, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
+    throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
   }
   startedMicrofrontends.push(data);
   res.status(200).json({ success: true });
@@ -51,7 +56,7 @@ microfrontendsRouter.get('/close', (req, res) => {
   const name = req.query.name;
   const closedMicrofrontendIndex = startedMicrofrontends.findIndex((mf) => mf.name === name);
   if (closedMicrofrontendIndex === -1) {
-    throw { status: 400, type: ErrorType.MICROFRONTEND_NOT_FOUND };
+    throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_NOT_FOUND };
   }
   startedMicrofrontends.splice(closedMicrofrontendIndex, 1);
   res.status(200).json({ success: true });
@@ -85,7 +90,7 @@ function errorMiddleware(
   _next: NextFunction,
 ) {
   if (error instanceof Error) {
-    res.status(500).json({ type: ErrorType.SERVER_ERROR });
+    res.status(ErrorStatus.SERVER_ERROR).json({ type: ErrorType.SERVER_ERROR });
   } else {
     res.status(error.status).json({ type: error.type, ...(error.message && { message: error.message }) });
   }
@@ -95,7 +100,7 @@ function validateRequest(schema: ObjectSchema) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const { error } = schema.validate(req.body);
     if (error) {
-      return next({ status: 400, type: ErrorType.VALIDATION_ERROR, message: error.details[0].message });
+      return next({ status: ErrorStatus.BAD_REQUEST, type: ErrorType.VALIDATION_ERROR, message: error.details[0].message });
     }
     next();
   };
