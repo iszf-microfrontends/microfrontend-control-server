@@ -26,10 +26,10 @@ type MicrofrontendDto = {
   name: string;
   url: string;
   component: string;
-  backend: string;
+  backendUrl: string;
 };
 
-type StartedMicrofrontendDto = Omit<MicrofrontendDto, 'backend'> & {
+type StartedMicrofrontendDto = Omit<MicrofrontendDto, 'backendUrl'> & {
   isBackendActive: boolean;
 };
 
@@ -47,7 +47,7 @@ const MicrofrontendDtoSchema = Joi.object<MicrofrontendDto>({
   name: Joi.string().required(),
   url: Joi.string().required(),
   component: Joi.string().required(),
-  backend: Joi.string().required(),
+  backendUrl: Joi.string().required(),
 });
 
 const app = express();
@@ -71,9 +71,9 @@ microfrontendsRouter.post('/start', validateRequest(MicrofrontendDtoSchema), asy
 
   let isBackendActive = false;
 
-  if (data.backend !== 'test') {
+  if (data.backendUrl !== 'test') {
     const backendServices = await getBackendServices();
-    const existingBackendService = backendServices.find((service) => createBackendUrl(service.domain, service.port) === data.backend);
+    const existingBackendService = backendServices.find((service) => createBackendUrl(service.domain, service.port) === data.backendUrl);
     if (!existingBackendService) {
       throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
     }
