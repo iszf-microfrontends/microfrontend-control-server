@@ -15,6 +15,7 @@ enum ErrorType {
   MICROFRONTEND_ALREADY_STARTED = 'microfrontend_already_started',
   BACKEND_SERVICE_NOT_FOUND = 'backend_service_not_found',
   SERVER_ERROR = 'server_error',
+  FAILED_GET_BACKEND_SERVICES = 'failed_get_backend_services',
 }
 
 enum ErrorStatus {
@@ -25,12 +26,13 @@ enum ErrorStatus {
 type MicrofrontendDto = {
   name: string;
   url: string;
+  scope: string;
   component: string;
   backendUrl: string;
 };
 
 type StartedMicrofrontendDto = Omit<MicrofrontendDto, 'backendUrl'> & {
-  isBackendActive: boolean;
+  isActive: boolean;
 };
 
 type BackendServiceDto = {
@@ -39,13 +41,10 @@ type BackendServiceDto = {
   'status-code': number;
 };
 
-type GetBackendServicesResponse = {
-  services: BackendServiceDto[];
-};
-
 const MicrofrontendDtoSchema = Joi.object<MicrofrontendDto>({
   name: Joi.string().required(),
   url: Joi.string().required(),
+  scope: Joi.string().required(),
   component: Joi.string().required(),
   backendUrl: Joi.string().required(),
 });
@@ -62,14 +61,14 @@ microfrontendsRouter.get('/all', (_req, res) => {
   res.status(200).json(startedMicrofrontends);
 });
 
-microfrontendsRouter.post('/start', validateRequest(MicrofrontendDtoSchema), async (req, res) => {
+microfrontendsRouter.post('/start', validationMiddleware(MicrofrontendDtoSchema), async (req, res) => {
   const data = req.body as MicrofrontendDto;
   const existingMicrofrontend = startedMicrofrontends.find((mf) => mf.url === data.url);
   if (existingMicrofrontend) {
     throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
   }
 
-  let isBackendActive = false;
+  let isActive = true;
 
   if (data.backendUrl !== 'test') {
     const backendServices = await getBackendServices();
@@ -78,10 +77,17 @@ microfrontendsRouter.post('/start', validateRequest(MicrofrontendDtoSchema), asy
       throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
     }
 
-    isBackendActive = existingBackendService['status-code'] === 200;
+    isActive = existingBackendService['status-code'] === 200;
   }
 
-  startedMicrofrontends.push({ name: data.name, url: data.url, component: data.component, isBackendActive });
+  const startedMicrofrontend: StartedMicrofrontendDto = {
+    name: data.name,
+    url: data.url,
+    scope: data.scope,
+    component: data.component,
+    isActive,
+  };
+  startedMicrofrontends.push(startedMicrofrontend);
   res.status(200).json({ success: true });
 });
 
@@ -118,7 +124,7 @@ bootstrap();
 
 function errorMiddleware(
   error: Error | { status: number; type: ErrorType; message?: string },
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ) {
@@ -127,9 +133,10 @@ function errorMiddleware(
   } else {
     res.status(error.status).json({ type: error.type, ...(error.message && { message: error.message }) });
   }
+  req.log.error(`Error Middleware: ${JSON.stringify(error)}`);
 }
 
-function validateRequest(schema: ObjectSchema) {
+function validationMiddleware(schema: ObjectSchema) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const { error } = schema.validate(req.body);
     if (error) {
@@ -142,10 +149,10 @@ function validateRequest(schema: ObjectSchema) {
 async function getBackendServices() {
   try {
     const response = await fetch(`${BACKEND_SERVICES_URL}/services`);
-    const data = (await response.json()) as GetBackendServicesResponse;
+    const data = (await response.json()) as { services: BackendServiceDto[] };
     return data.services;
   } catch (error) {
-    console.error(`Failed to get backend services: ${error}`);
+    throw { status: ErrorStatus.SERVER_ERROR, type: ErrorType.FAILED_GET_BACKEND_SERVICES };
   }
 }
 
