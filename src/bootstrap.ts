@@ -28,16 +28,15 @@ type MicrofrontendDto = {
   url: string;
   scope: string;
   component: string;
-  backendUrl: string;
+  backendName: string;
 };
 
-type StartedMicrofrontendDto = Omit<MicrofrontendDto, 'backendUrl'> & {
+type StartedMicrofrontendDto = Omit<MicrofrontendDto, 'backendName'> & {
   isActive: boolean;
 };
 
 type BackendServiceDto = {
-  domain: string;
-  port: number;
+  name: string;
   'status-code': number;
 };
 
@@ -46,7 +45,7 @@ const MicrofrontendDtoSchema = Joi.object<MicrofrontendDto>({
   url: Joi.string().required(),
   scope: Joi.string().required(),
   component: Joi.string().required(),
-  backendUrl: Joi.string().required(),
+  backendName: Joi.string().required(),
 });
 
 const app = express();
@@ -68,11 +67,11 @@ microfrontendsRouter.post('/start', validationMiddleware(MicrofrontendDtoSchema)
     throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
   }
 
-  let isActive = true;
+  let isActive = false;
 
-  if (data.backendUrl !== 'test') {
+  if (data.backendName !== 'test') {
     const backendServices = await getBackendServices();
-    const existingBackendService = backendServices.find((service) => createBackendUrl(service.domain, service.port) === data.backendUrl);
+    const existingBackendService = backendServices.find((service) => service.name === data.backendName);
     if (!existingBackendService) {
       throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
     }
@@ -154,8 +153,4 @@ async function getBackendServices() {
   } catch (error) {
     throw { status: ErrorStatus.SERVER_ERROR, type: ErrorType.FAILED_GET_BACKEND_SERVICES };
   }
-}
-
-function createBackendUrl(domain: string, port: number) {
-  return `${domain}:${port}`;
 }
