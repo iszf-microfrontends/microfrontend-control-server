@@ -60,35 +60,37 @@ microfrontendsRouter.get('/all', (_req, res) => {
   res.status(200).json(startedMicrofrontends);
 });
 
-microfrontendsRouter.post('/start', validationMiddleware(MicrofrontendDtoSchema), async (req, res) => {
-  const data = req.body as MicrofrontendDto;
-  const existingMicrofrontend = startedMicrofrontends.find((mf) => mf.url === data.url);
-  if (existingMicrofrontend) {
-    throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
-  }
-
-  let isActive = false;
-
-  if (data.backendName !== 'test') {
-    const backendServices = await getBackendServices();
-    const existingBackendService = backendServices.find((service) => service.name === data.backendName);
-    if (!existingBackendService) {
-      throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
+microfrontendsRouter.post(
+  '/start',
+  validationMiddleware(MicrofrontendDtoSchema),
+  asyncHandler(async (req, res) => {
+    const data = req.body as MicrofrontendDto;
+    const existingMicrofrontend = startedMicrofrontends.find((mf) => mf.url === data.url);
+    if (existingMicrofrontend) {
+      throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
     }
 
-    isActive = existingBackendService['status-code'] === 200;
-  }
+    let isActive = false;
+    if (data.backendName !== 'test') {
+      const backendServices = await getBackendServices();
+      const existingBackendService = backendServices.find((service) => service.name === data.backendName);
+      if (!existingBackendService) {
+        throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
+      }
+      isActive = existingBackendService['status-code'] === 200;
+    }
 
-  const startedMicrofrontend: StartedMicrofrontendDto = {
-    name: data.name,
-    url: data.url,
-    scope: data.scope,
-    component: data.component,
-    isActive,
-  };
-  startedMicrofrontends.push(startedMicrofrontend);
-  res.status(200).json({ success: true });
-});
+    const startedMicrofrontend: StartedMicrofrontendDto = {
+      name: data.name,
+      url: data.url,
+      scope: data.scope,
+      component: data.component,
+      isActive,
+    };
+    startedMicrofrontends.push(startedMicrofrontend);
+    res.status(200).json({ success: true });
+  }),
+);
 
 microfrontendsRouter.get('/close', (req, res) => {
   const name = req.query.name;
@@ -153,4 +155,10 @@ async function getBackendServices() {
   } catch (error) {
     throw { status: ErrorStatus.SERVER_ERROR, type: ErrorType.FAILED_GET_BACKEND_SERVICES };
   }
+}
+
+function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => void) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    return Promise.resolve(fn(req, res, next)).catch(next);
+  };
 }

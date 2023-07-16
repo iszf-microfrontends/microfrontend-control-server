@@ -6,6 +6,7 @@
   "author": "Sviatoslav <sviatoslavnazin@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "preview": "node ./dist/index.js",
     "start": "nodemon ./src/index.ts",
     "build": "ts-node esbuild.config.ts",
     "format": "prettier src --write"
