@@ -1,13 +1,11 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
-import dotenv from 'dotenv';
-import pinoHttp from 'pino-http';
 import Joi, { ObjectSchema } from 'joi';
 import fetch from 'cross-fetch';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PORT = process.env.PORT ?? 3000;
-const BACKEND_SERVICES_URL = process.env.BACKEND_SERVICES_URL ?? '';
+const config = process.env;
 
 enum ErrorType {
   VALIDATION_ERROR = 'validation_error',
@@ -49,7 +47,6 @@ const MicrofrontendDtoSchema = Joi.object<MicrofrontendDto>({
 });
 
 const app = express();
-const logger = pinoHttp({ transport: { target: 'pino-pretty' } });
 
 const router = Router();
 const microfrontendsRouter = Router();
@@ -104,7 +101,6 @@ microfrontendsRouter.get('/close', (req, res) => {
 
 router.use('/microfrontends', microfrontendsRouter);
 
-app.use(logger);
 app.use(express.json());
 
 app.use('/api/v1', router);
@@ -113,8 +109,8 @@ app.use(errorMiddleware);
 
 const bootstrap = () => {
   try {
-    app.listen(PORT, () => {
-      console.log(`Microfrontend control server listening on port ${PORT}`);
+    app.listen(config.PORT, () => {
+      console.log(`Microfrontend control server listening on port ${config.PORT}`);
     });
   } catch (error) {
     console.error(`Failed to start Microfrontend control server: ${error}`);
@@ -134,7 +130,7 @@ function errorMiddleware(
   } else {
     res.status(error.status).json({ type: error.type, ...(error.message && { message: error.message }) });
   }
-  req.log.error(`Error Middleware: ${JSON.stringify(error)}`);
+  console.error(`Error Middleware: ${JSON.stringify(error)}`);
 }
 
 function validationMiddleware(schema: ObjectSchema) {
@@ -149,7 +145,7 @@ function validationMiddleware(schema: ObjectSchema) {
 
 async function getBackendServices() {
   try {
-    const response = await fetch(`${BACKEND_SERVICES_URL}/services`);
+    const response = await fetch(`${config.BACKEND_SERVICES_URL}/services`);
     const data = (await response.json()) as { services: BackendServiceDto[] };
     return data.services;
   } catch (error) {
