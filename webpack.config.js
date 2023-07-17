@@ -35,5 +35,5 @@ module.exports = {
 };
 
 function resolveRoot(...segments) {
-  return path.resolve(...segments);
+  return path.resolve(__dirname, ...segments);
 }
