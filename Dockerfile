@@ -1,3 +1,5 @@
+ARG PORT
+
 FROM node:16.20.0-alpine3.16 as builder
 
 WORKDIR /app
@@ -18,6 +20,6 @@ COPY --from=builder /app/dist ./dist
 
 COPY package*.json yarn.lock ./
 
-EXPOSE 3000
+EXPOSE ${PORT}
 
 CMD ["yarn", "serve"]
