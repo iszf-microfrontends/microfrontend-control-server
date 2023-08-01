@@ -67,15 +67,12 @@ microfrontendsRouter.post(
       throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.MICROFRONTEND_ALREADY_STARTED };
     }
 
-    let isActive = false;
-    if (data.backendName !== 'test') {
-      const backendServices = await getBackendServices();
-      const existingBackendService = backendServices.find((service) => service.name === data.backendName);
-      if (!existingBackendService) {
-        throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
-      }
-      isActive = existingBackendService['status-code'] === 200;
+    const backendServices = await getBackendServices();
+    const existingBackendService = backendServices.find((service) => service.name === data.backendName);
+    if (!existingBackendService) {
+      throw { status: ErrorStatus.BAD_REQUEST, type: ErrorType.BACKEND_SERVICE_NOT_FOUND };
     }
+    const isActive = existingBackendService['status-code'] === 200;
 
     const startedMicrofrontend: StartedMicrofrontendDto = {
       name: data.name,
