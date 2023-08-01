@@ -10,7 +10,7 @@
     "start": "yarn build && yarn serve",
     "serve": "node dist/index.js",
     "build": "webpack --progress",
-    "format": "prettier src --write"
+    "format": "prettier . --write"
   },
   "dependencies": {
     "cross-fetch": "^3.1.6",
