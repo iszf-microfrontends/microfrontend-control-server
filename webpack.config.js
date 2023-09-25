@@ -1,11 +1,16 @@
 const DotenvWebpackPlugin = require('dotenv-webpack');
 const path = require('path');
 
+const resolveRoot = (...segments) => {
+  return path.resolve(__dirname, ...segments);
+};
+
 module.exports = {
+  target: 'node',
   mode: 'production',
   entry: resolveRoot('src/index'),
   target: 'node',
-  devtool: false,
+  devtool: 'source-map',
   output: {
     path: resolveRoot('dist'),
     filename: 'index.js',
@@ -20,8 +25,7 @@ module.exports = {
           {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env', '@babel/preset-typescript'],
-              plugins: ['@babel/plugin-transform-runtime'],
+              presets: ['@babel/preset-typescript'],
             },
           },
         ],
@@ -33,7 +37,3 @@ module.exports = {
     extensions: ['.ts', '.js'],
   },
 };
-
-function resolveRoot(...segments) {
-  return path.resolve(__dirname, ...segments);
-}

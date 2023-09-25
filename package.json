@@ -1,10 +1,6 @@
 {
   "name": "microfrontend-control-server",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:iszf-microfrontends/microfrontend-control-server.git",
-  "author": "Sviatoslav <sviatoslavnazin@gmail.com>",
-  "license": "MIT",
+  "private": true,
   "scripts": {
     "dev": "nodemon src/index.ts",
     "start": "yarn build && yarn serve",
@@ -20,10 +16,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",
-    "@babel/plugin-transform-runtime": "^7.22.9",
-    "@babel/preset-env": "^7.22.9",
     "@babel/preset-typescript": "^7.22.5",
     "@types/express": "^4.17.17",
+    "@types/node": "^20.6.5",
     "babel-loader": "^9.1.3",
     "dotenv-webpack": "^8.0.1",
     "nodemon": "^2.0.22",
