@@ -1,25 +1,19 @@
-const DotenvWebpackPlugin = require('dotenv-webpack');
 const path = require('path');
-
-const resolveRoot = (...segments) => {
-  return path.resolve(__dirname, ...segments);
-};
+const DotenvPlugin = require('dotenv-webpack');
 
 module.exports = {
-  target: 'node',
+  entry: path.resolve(__dirname, './src/index'),
   mode: 'production',
-  entry: resolveRoot('src/index'),
   target: 'node',
-  devtool: 'source-map',
   output: {
-    path: resolveRoot('dist'),
+    path: path.resolve(__dirname, './dist'),
     filename: 'index.js',
     clean: true,
   },
   module: {
     rules: [
       {
-        test: /\.(js|ts)?$/,
+        test: /\.ts?$/,
         exclude: /node_modules/,
         use: [
           {
@@ -32,8 +26,8 @@ module.exports = {
       },
     ],
   },
-  plugins: [new DotenvWebpackPlugin()],
+  plugins: [new DotenvPlugin()],
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.js', '.ts'],
   },
 };

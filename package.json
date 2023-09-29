@@ -6,23 +6,35 @@
     "start": "yarn build && yarn serve",
     "serve": "node dist/index.js",
     "build": "webpack --progress",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "lint": "eslint . --ext ts --fix"
   },
   "dependencies": {
     "cross-fetch": "^3.1.6",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "joi": "^17.9.2"
+    "joi": "^17.9.2",
+    "morgan": "^1.10.0",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",
     "@babel/preset-typescript": "^7.22.5",
     "@types/express": "^4.17.17",
+    "@types/morgan": "^1.9.5",
     "@types/node": "^20.6.5",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
     "babel-loader": "^9.1.3",
     "dotenv-webpack": "^8.0.1",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
     "nodemon": "^2.0.22",
-    "prettier": "^2.8.8",
+    "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.5",
