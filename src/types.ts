@@ -17,7 +17,7 @@ export interface MicrofrontendDto {
   backendName: string;
 }
 
-export interface ConnectedMicrofrontendDto extends Omit<MicrofrontendDto, 'backendName'> {
+export interface ConnectedMicrofrontendDto extends MicrofrontendDto {
   isActive: boolean;
 }
 

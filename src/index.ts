@@ -2,7 +2,7 @@ import express, { Router, type NextFunction, type Request, type Response } from 
 import Joi, { type ObjectSchema } from 'joi';
 
 import { BadRequestError } from './api-error';
-import { CHECK_MICROFRONTENDS_HEALTH_INTERVAL, GET_BACKEND_SERVICES_URL, PORT } from './config';
+import { CHECK_HEALTH_INTERVAL, GET_BACKEND_SERVICES_URL, PORT } from './config';
 import { logger } from './logger';
 import { initMiddleware } from './middleware';
 import { ErrorType, type BackendServiceDto, type ConnectedMicrofrontendDto, type MicrofrontendDto } from './types';
@@ -60,7 +60,26 @@ const createMicrofrontendsHealthChecker = (delay: number): (() => void) => {
   };
 };
 
-const checkMicrofrontendsHealth = createMicrofrontendsHealthChecker(CHECK_MICROFRONTENDS_HEALTH_INTERVAL);
+const createBackendServicesHealthChecker = (delay: number): (() => void) => {
+  let interval: NodeJS.Timeout | null = null;
+  return () => {
+    if (!interval) {
+      interval = setInterval(async () => {
+        const backendServices = await getBackendServices();
+        for (let i = 0; i < microfrontends.length; i++) {
+          const microfrontend = microfrontends[i];
+          microfrontend.isActive = backendServices.find((bs) => bs.name === microfrontend.backendName)?.['status-code'] === 200;
+        }
+      });
+      if (microfrontends.length === 0 && interval) {
+        clearInterval(interval);
+      }
+    }
+  };
+};
+
+const checkMicrofrontendsHealth = createMicrofrontendsHealthChecker(CHECK_HEALTH_INTERVAL);
+const checkBackendServicesHealth = createBackendServicesHealthChecker(CHECK_HEALTH_INTERVAL);
 
 router.post(
   '/microfrontends',
@@ -90,9 +109,11 @@ router.post(
       url: data.url,
       component: data.component,
       isActive: existingBackendService['status-code'] === 200,
+      backendName: existingBackendService.name,
     });
 
     checkMicrofrontendsHealth();
+    checkBackendServicesHealth();
 
     res.status(200).json({ success: true });
   }),
