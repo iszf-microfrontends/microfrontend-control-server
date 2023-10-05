@@ -10,6 +10,9 @@ module.exports = {
     filename: 'index.js',
     clean: true,
   },
+  externals: {
+    express: "require('express')",
+  },
   module: {
     rules: [
       {

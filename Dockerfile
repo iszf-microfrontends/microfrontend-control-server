@@ -4,13 +4,13 @@ FROM node:16-alpine3.17 as base
 
 WORKDIR /app
 
-COPY package*.json yarn.lock ./
+COPY package*.json pnpm-lock.yaml ./
 
-RUN yarn install
+RUN pnpm install
 
 COPY . .
 
-RUN yarn build
+RUN pnpm build
 
 FROM node:16-alpine3.17
 
@@ -18,8 +18,8 @@ WORKDIR /app
 
 COPY --from=base /app/dist ./dist
 
-COPY package*.json yarn.lock ./
+COPY package*.json pnpm-lock.yaml ./
 
 EXPOSE ${PORT}
 
-CMD ["yarn", "serve"]
+CMD ["pnpm", "serve"]
