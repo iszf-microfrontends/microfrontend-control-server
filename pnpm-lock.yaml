@@ -32,8 +32,8 @@ devDependencies:
     specifier: ^7.22.5
     version: 7.23.0(@babel/core@7.23.0)
   '@iszf-microfrontends/eslint-config':
-    specifier: ^0.0.1
-    version: 0.0.1(@typescript-eslint/eslint-plugin@6.7.4)(@typescript-eslint/parser@6.7.4)(eslint-config-prettier@8.10.0)(eslint-config-standard-with-typescript@39.1.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@16.1.0)(eslint-plugin-prettier@4.2.1)(eslint-plugin-promise@6.1.1)(eslint@8.50.0)(prettier@2.8.8)
+    specifier: ^0.0.3
+    version: 0.0.3(@typescript-eslint/eslint-plugin@6.7.4)(@typescript-eslint/parser@6.7.4)(eslint-config-prettier@8.10.0)(eslint-config-standard-with-typescript@39.1.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@16.1.0)(eslint-plugin-prettier@4.2.1)(eslint-plugin-promise@6.1.1)(eslint@8.50.0)(prettier@2.8.8)
   '@iszf-microfrontends/prettier-config':
     specifier: ^0.0.1
     version: 0.0.1
@@ -521,21 +521,21 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
-  /@iszf-microfrontends/eslint-config@0.0.1(@typescript-eslint/eslint-plugin@6.7.4)(@typescript-eslint/parser@6.7.4)(eslint-config-prettier@8.10.0)(eslint-config-standard-with-typescript@39.1.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@16.1.0)(eslint-plugin-prettier@4.2.1)(eslint-plugin-promise@6.1.1)(eslint@8.50.0)(prettier@2.8.8):
-    resolution: {integrity: sha512-rzTFRuO7AOJKs1P55b1MyOOlpFOtZLkZhMTjNkZyink8kR3KFWEeMc/TTNVVsNxlgozuutv+MctY+0s8MZDThw==}
+  /@iszf-microfrontends/eslint-config@0.0.3(@typescript-eslint/eslint-plugin@6.7.4)(@typescript-eslint/parser@6.7.4)(eslint-config-prettier@8.10.0)(eslint-config-standard-with-typescript@39.1.0)(eslint-plugin-import@2.28.1)(eslint-plugin-n@16.1.0)(eslint-plugin-prettier@4.2.1)(eslint-plugin-promise@6.1.1)(eslint@8.50.0)(prettier@2.8.8):
+    resolution: {integrity: sha512-B7GSv890K6KNPFjRn81rBYxBlO0TiME9UVDzM3q20FbgdoMCfhjJteFg8gLQZH9iIdFOMKVuNCcKOmkTs032TQ==}
     peerDependencies:
-      '@typescript-eslint/eslint-plugin': ^6.7.3
-      '@typescript-eslint/parser': ^6.7.4
-      eslint: ^8.50.0
-      eslint-config-prettier: ^8.8.0
-      eslint-config-standard-with-typescript: ^39.1.0
-      eslint-plugin-import: ^2.27.5
-      eslint-plugin-n: ^16.1.0
-      eslint-plugin-prettier: ^4.2.1
-      eslint-plugin-promise: ^6.1.1
-      eslint-plugin-react: ^7.33.2
-      eslint-plugin-react-hooks: ^4.6.0
-      prettier: ^2.8.8
+      '@typescript-eslint/eslint-plugin': '>= 5'
+      '@typescript-eslint/parser': '>= 5'
+      eslint: '>= 8'
+      eslint-config-prettier: '>= 8'
+      eslint-config-standard-with-typescript: '>= 39'
+      eslint-plugin-import: '>= 2'
+      eslint-plugin-n: '>= 16'
+      eslint-plugin-prettier: '>= 4'
+      eslint-plugin-promise: '>= 6'
+      eslint-plugin-react: '>= 7'
+      eslint-plugin-react-hooks: '>= 4'
+      prettier: '>= 2'
     peerDependenciesMeta:
       eslint-plugin-react:
         optional: true
