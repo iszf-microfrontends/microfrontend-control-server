@@ -70,7 +70,7 @@ const createBackendServicesHealthChecker = (delay: number): (() => void) => {
           const microfrontend = microfrontends[i];
           microfrontend.isActive = backendServices.find((bs) => bs.name === microfrontend.backendName)?.['status-code'] === 200;
         }
-      });
+      }, delay);
       if (microfrontends.length === 0 && interval) {
         clearInterval(interval);
       }

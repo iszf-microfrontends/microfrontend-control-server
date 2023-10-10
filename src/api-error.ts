@@ -1,7 +1,11 @@
 import { ErrorStatus, type ErrorType } from './types';
 
 export class ApiError {
-  constructor(public status: ErrorStatus, public type: ErrorType, public message?: string) {}
+  constructor(
+    public status: ErrorStatus,
+    public type: ErrorType,
+    public message?: string,
+  ) {}
 }
 
 const createApiError = (status: ErrorStatus): new (type: ErrorType, message?: string) => ApiError =>
