@@ -2,7 +2,7 @@ import express, { Router, type NextFunction, type Request, type Response } from 
 import Joi, { type ObjectSchema } from 'joi';
 
 import { BadRequestError } from './api-error';
-import { CHECK_HEALTH_INTERVAL, GET_BACKEND_SERVICES_URL, PORT } from './config';
+import { GET_BACKEND_SERVICES_URL, PORT, CHECK_HEALTH_INTERVAL } from './config';
 import { logger } from './logger';
 import { initMiddleware } from './middleware';
 import { ErrorType, type BackendServiceDto, type ConnectedMicrofrontendDto, type MicrofrontendDto } from './types';
@@ -38,20 +38,34 @@ const getBackendServices = async (): Promise<BackendServiceDto[]> => {
   }
 };
 
-const createMicrofrontendsHealthChecker = (delay: number): (() => void) => {
+const createServicesHealthChecker = (delay: number): (() => void) => {
   let interval: NodeJS.Timeout | null = null;
+
+  const checkMicrofrontends = async (): Promise<void> => {
+    for (let i = 0; i < microfrontends.length; i++) {
+      const microfrontend = microfrontends[i];
+      try {
+        await fetch(microfrontend.url);
+      } catch {
+        logger.info(`Microfrontend not responding: ${microfrontend.url}`);
+        microfrontends.splice(i, 1);
+      }
+    }
+  };
+
+  const checkBackendServices = async (): Promise<void> => {
+    const backendServices = await getBackendServices();
+    for (let i = 0; i < microfrontends.length; i++) {
+      const microfrontend = microfrontends[i];
+      microfrontend.isActive = backendServices.find((bs) => bs.name === microfrontend.backendName)?.['status-code'] === 200;
+    }
+  };
+
   return () => {
     if (!interval) {
       interval = setInterval(async () => {
-        for (let i = 0; i < microfrontends.length; i++) {
-          const microfrontend = microfrontends[i];
-          try {
-            await fetch(microfrontend.url);
-          } catch {
-            logger.info(`Microfrontend not responding: ${microfrontend.url}`);
-            microfrontends.splice(i, 1);
-          }
-        }
+        await checkMicrofrontends();
+        await checkBackendServices();
       }, delay);
       if (microfrontends.length === 0 && interval) {
         clearInterval(interval);
@@ -60,37 +74,18 @@ const createMicrofrontendsHealthChecker = (delay: number): (() => void) => {
   };
 };
 
-const createBackendServicesHealthChecker = (delay: number): (() => void) => {
-  let interval: NodeJS.Timeout | null = null;
-  return () => {
-    if (!interval) {
-      interval = setInterval(async () => {
-        const backendServices = await getBackendServices();
-        for (let i = 0; i < microfrontends.length; i++) {
-          const microfrontend = microfrontends[i];
-          microfrontend.isActive = backendServices.find((bs) => bs.name === microfrontend.backendName)?.['status-code'] === 200;
-        }
-      }, delay);
-      if (microfrontends.length === 0 && interval) {
-        clearInterval(interval);
-      }
-    }
-  };
-};
+const MicrofrontendSchema = Joi.object<MicrofrontendDto>({
+  name: Joi.string().required(),
+  url: Joi.string().required(),
+  component: Joi.string().required(),
+  backendName: Joi.string().required(),
+});
 
-const checkMicrofrontendsHealth = createMicrofrontendsHealthChecker(CHECK_HEALTH_INTERVAL);
-const checkBackendServicesHealth = createBackendServicesHealthChecker(CHECK_HEALTH_INTERVAL);
+const checkServicesHealth = createServicesHealthChecker(CHECK_HEALTH_INTERVAL);
 
 router.post(
   '/microfrontends',
-  validateSchema(
-    Joi.object<MicrofrontendDto>({
-      name: Joi.string().required(),
-      url: Joi.string().required(),
-      component: Joi.string().required(),
-      backendName: Joi.string().required(),
-    }),
-  ),
+  validateSchema(MicrofrontendSchema),
   asyncHandler(async (req, res) => {
     const data = req.body as MicrofrontendDto;
     const existingMicrofrontend = microfrontends.find((mf) => mf.url === data.url);
@@ -112,8 +107,7 @@ router.post(
       backendName: existingBackendService.name,
     });
 
-    checkMicrofrontendsHealth();
-    checkBackendServicesHealth();
+    checkServicesHealth();
 
     res.status(200).json({ success: true });
   }),

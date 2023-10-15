@@ -33,7 +33,7 @@ const errorMiddleware = async (
 export const initMiddleware = (app: Express, router: Router, done: () => void): void => {
   app.use(express.json());
   app.use(loggerMiddleware);
-  app.use(router);
+  app.use('/api', router);
   app.use(errorMiddleware);
 
   done();
