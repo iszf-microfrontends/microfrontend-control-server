@@ -4,7 +4,7 @@ import * as path from 'path';
 import dotenv from 'dotenv';
 import esbuild from 'esbuild';
 
-const envFile = dotenv.config().parsed;
+const envConfig = dotenv.config().parsed;
 
 const resolveRoot = (...segments: string[]): string => path.resolve(__dirname, ...segments);
 
@@ -12,15 +12,20 @@ const clean: esbuild.Plugin = {
   name: 'Clean',
   setup: (build) => {
     build.onStart(async () => {
-      const outdir = build.initialOptions.outdir;
-      if (outdir) {
-        await rm(outdir, { recursive: true });
+      try {
+        const outdir = build.initialOptions.outdir;
+        if (outdir) {
+          await rm(outdir, { recursive: true });
+        }
+      } catch (error) {
+        if ((error as { code: string }).code !== 'ENOENT') {
+          throw error;
+        }
       }
     });
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 esbuild
   .build({
     platform: 'node',
@@ -31,16 +36,16 @@ esbuild
     tsconfig: resolveRoot('tsconfig.json'),
     plugins: [clean],
     define: {
-      'process.env': JSON.stringify(envFile),
+      'process.env': JSON.stringify(envConfig),
     },
     alias: {
       '~': resolveRoot('src'),
     },
   })
-  .then((r) => {
-    console.log('Build succeeded.');
+  .then(() => {
+    console.log('Build succeeded');
   })
-  .catch((e) => {
-    console.log('Error building:', e.message);
+  .catch((error) => {
+    console.log(error);
     process.exit(1);
   });

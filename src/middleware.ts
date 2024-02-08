@@ -1,9 +1,20 @@
 import express, { type NextFunction, type Express, type Request, type Response, type Router } from 'express';
+import { type ObjectSchema } from 'joi';
 import morgan from 'morgan';
 
-import { ApiError } from './api-error';
+import { ApiError, BadRequestError } from './api-error';
 import { logger } from './logger';
 import { ErrorStatus, ErrorType } from './types';
+import { getErrorMessage } from './utils';
+
+export const validationMiddleware =
+  (schema: ObjectSchema) => (request: Request, _response: Response, next: NextFunction) => {
+    const { error } = schema.validate(request.body);
+    if (error) {
+      return next(new BadRequestError(ErrorType.VALIDATION_ERROR, error.message));
+    }
+    next();
+  };
 
 const loggerMiddleware = morgan('combined', {
   stream: {
@@ -14,20 +25,18 @@ const loggerMiddleware = morgan('combined', {
 });
 
 const errorMiddleware = async (
-  error: Error | { status: number; type: ErrorType; message?: string },
-  _req: Request,
-  res: Response,
+  error: unknown,
+  _request: Request,
+  response: Response,
   _next: NextFunction,
 ): Promise<void> => {
-  let errorMessage = error.message;
+  const errorMessage = getErrorMessage(error);
   if (error instanceof ApiError) {
-    res.status(error.status).json({ type: error.type, ...(error.message && { message: error.message }) });
-    errorMessage = JSON.stringify(error);
+    response.status(Number(error.status)).json({ type: error.type, ...(errorMessage && { message: errorMessage }) });
   } else {
-    res.status(ErrorStatus.SERVER_ERROR).json({ type: ErrorType.SERVER_ERROR });
-    errorMessage = error.message;
+    response.status(ErrorStatus.SERVER_ERROR).json({ type: ErrorType.SERVER_ERROR });
   }
-  logger.error(`Error: ${errorMessage}`);
+  logger.error(`Error middleware: ${errorMessage}`);
 };
 
 export const initMiddleware = (app: Express, router: Router, done: () => void): void => {

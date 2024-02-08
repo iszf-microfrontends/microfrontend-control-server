@@ -10,18 +10,19 @@ export enum ErrorStatus {
   SERVER_ERROR = 500,
 }
 
-export interface MicrofrontendDto {
+export type ConnectedMicrofrontend = {
   name: string;
   url: string;
-  component: string;
+  contentComponent: string;
   backendName: string;
-}
+};
 
-export interface ConnectedMicrofrontendDto extends MicrofrontendDto {
+export type Microfrontend = ConnectedMicrofrontend & {
+  id: string;
   isActive: boolean;
-}
+};
 
-export interface BackendServiceDto {
+export type BackendService = {
   name: string;
   'status-code': number;
-}
+};
