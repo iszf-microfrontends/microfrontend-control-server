@@ -19,7 +19,7 @@ export const getErrorMessage = (error: unknown): string => {
 
 export const asyncHandler =
   (fn: (request: Request, response: Response, next: NextFunction) => void) =>
-  async (request: Request, response: Response, next: NextFunction) =>
+  async (request: Request, response: Response, next: NextFunction): Promise<void> =>
     Promise.resolve(fn(request, response, next)).catch(next);
 
 export const getBackendServices = async (): Promise<BackendService[]> => {

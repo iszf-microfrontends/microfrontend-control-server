@@ -25,13 +25,17 @@ router.post(
   validationMiddleware(ConnectedMicrofrontendSchema),
   asyncHandler(async (request, response) => {
     const data = request.body as ConnectedMicrofrontend;
-    const existingMicrofrontend = microfrontends.find((microfrontend) => microfrontend.url === data.url);
+    const existingMicrofrontend = microfrontends.find(
+      (microfrontend) => microfrontend.url === data.url,
+    );
     if (existingMicrofrontend) {
       throw new BadRequestError(ErrorType.ALREADY_CONNECTED);
     }
 
     const backendServices = await getBackendServices();
-    const existingBackendService = backendServices.find((service) => service.name === data.backendName);
+    const existingBackendService = backendServices.find(
+      (service) => service.name === data.backendName,
+    );
     if (!existingBackendService) {
       throw new BadRequestError(ErrorType.UNKNOWN_BACKEND);
     }
@@ -49,10 +53,12 @@ router.post(
 
 const bootstrap = async (): Promise<void> => {
   try {
+    // eslint-disable-next-line no-console
     app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
     microfrontendManager.watch();
   } catch (error) {
-    console.error(`Failed to start server on port ${PORT}:`, getErrorMessage(error));
+    // eslint-disable-next-line no-console
+    console.error(`Failed to start server on port ${PORT}: ${getErrorMessage(error)}`);
   }
 };
 
@@ -65,6 +71,7 @@ function createMicrofrontendManager(): {
     for (let idx = 0; idx < microfrontends.length; idx += 1) {
       const microfrontend = microfrontends[idx];
       try {
+        // eslint-disable-next-line no-await-in-loop
         await fetch(microfrontend.url);
       } catch (error) {
         microfrontends.splice(idx, 1);
@@ -79,8 +86,11 @@ function createMicrofrontendManager(): {
 
     try {
       const backendServices = await getBackendServices();
-      for (const microfrontend of microfrontends) {
-        const backendService = backendServices.find((service) => service.name === microfrontend.backendName);
+      for (let idx = 0; idx < microfrontends.length; idx += 1) {
+        const microfrontend = microfrontends[idx];
+        const backendService = backendServices.find(
+          (service) => service.name === microfrontend.backendName,
+        );
         microfrontend.isActive = backendService?.['status-code'] === 200;
       }
     } catch (error) {

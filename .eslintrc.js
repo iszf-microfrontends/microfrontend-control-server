@@ -1,5 +1,5 @@
 module.exports = {
   root: true,
-  extends: ['@iszf-microfrontends/eslint-config/base'],
+  extends: ['@iszf-microfrontends/eslint-config'],
   ignorePatterns: ['dist', '.eslintrc.js'],
 };

@@ -1,8 +1,7 @@
+import esbuild from 'esbuild';
+import dotenv from 'dotenv';
 import { rm } from 'fs/promises';
 import * as path from 'path';
-
-import dotenv from 'dotenv';
-import esbuild from 'esbuild';
 
 const envConfig = dotenv.config().parsed;
 
@@ -43,9 +42,11 @@ esbuild
     },
   })
   .then(() => {
+    // eslint-disable-next-line no-console
     console.log('Build succeeded');
   })
   .catch((error) => {
+    // eslint-disable-next-line no-console
     console.log(error);
     process.exit(1);
   });

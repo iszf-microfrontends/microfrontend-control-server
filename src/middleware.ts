@@ -1,4 +1,11 @@
-import express, { type NextFunction, type Express, type Request, type Response, type Router } from 'express';
+import cors from 'cors';
+import express, {
+  type NextFunction,
+  type Express,
+  type Request,
+  type Response,
+  type Router,
+} from 'express';
 import { type ObjectSchema } from 'joi';
 import morgan from 'morgan';
 
@@ -8,10 +15,12 @@ import { ErrorStatus, ErrorType } from './types';
 import { getErrorMessage } from './utils';
 
 export const validationMiddleware =
-  (schema: ObjectSchema) => (request: Request, _response: Response, next: NextFunction) => {
+  (schema: ObjectSchema) =>
+  (request: Request, _response: Response, next: NextFunction): void => {
     const { error } = schema.validate(request.body);
     if (error) {
-      return next(new BadRequestError(ErrorType.VALIDATION_ERROR, error.message));
+      next(new BadRequestError(ErrorType.VALIDATION_ERROR, error.message));
+      return;
     }
     next();
   };
@@ -32,7 +41,9 @@ const errorMiddleware = async (
 ): Promise<void> => {
   const errorMessage = getErrorMessage(error);
   if (error instanceof ApiError) {
-    response.status(Number(error.status)).json({ type: error.type, ...(errorMessage && { message: errorMessage }) });
+    response
+      .status(Number(error.status))
+      .json({ type: error.type, ...(errorMessage && { message: errorMessage }) });
   } else {
     response.status(ErrorStatus.SERVER_ERROR).json({ type: ErrorType.SERVER_ERROR });
   }
@@ -40,6 +51,7 @@ const errorMiddleware = async (
 };
 
 export const initMiddleware = (app: Express, router: Router, done: () => void): void => {
+  app.use(cors());
   app.use(express.json());
   app.use(loggerMiddleware);
   app.use('/api', router);
